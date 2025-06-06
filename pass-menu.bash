@@ -33,6 +33,7 @@ MODE_PROMPT="mode"
 LOG_TYPE="compact"
 PASS_MODE="ask"
 SHOW_ALIASES=0
+SHOW_FILE_NAME=0
 
 
 # ---------------------- #
@@ -1246,6 +1247,7 @@ Options:
       --key-prompt            Prompt message when choosing a password store key
       --mode-prompt           Prompt message when choosing pass-menu mode
   -a, --show-aliases          Show password aliases (symbolic links)
+  -n, --show-filename         Show the filename in the list of fields of an entry
   -h, --help                  Print this help message and exit
 
 Logger Types:
@@ -1491,6 +1493,10 @@ parse_args () {
                 SHOW_ALIASES=1
                 shift 1
             ;;
+            -n | --show-filename)
+                SHOW_FILE_NAME=1
+                shift 1
+            ;;
             -*) arg_error "Unknown flag" "${1}" ;;
             *)  arg_error "Invalid position for value" "${1}" ;;
         esac
@@ -1553,6 +1559,10 @@ main () {
     read_pass_file "${FILE_NAME}" | readarray FILE
 
     parse_file
+
+    if [ "${SHOW_FILE_NAME}" = "1" ]; then
+        DATA+=("name" "$(basename ${FILE_NAME})")
+    fi
 
     if [ ${#DATA[@]} = 0 ]; then
         read_error file "File doesn't have any data: $(quote "${FILE_NAME}")"
