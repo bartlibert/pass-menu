@@ -32,6 +32,7 @@ KEY_PROMPT="key"
 MODE_PROMPT="mode"
 LOG_TYPE="compact"
 PASS_MODE="ask"
+SHOW_ALIASES=0
 
 
 # ---------------------- #
@@ -205,7 +206,11 @@ run_action () {
 is_pass_file () [[ -r "${PASSWORD_STORE_DIR}/${1}.gpg" ]]
 
 list_pass_filenames () {
-    find "${PASSWORD_STORE_DIR}" -type f -name "*.gpg" -printf '%P\n' |
+    local FIND_ARGS=""
+    if [ "$SHOW_ALIASES" = "1" ]; then
+        FIND_ARGS=-L
+    fi
+    find ${FIND_ARGS} "${PASSWORD_STORE_DIR}" -type f -name "*.gpg" -printf '%P\n' |
         sed 's/\.gpg$//' |
         sort ||
         true
@@ -1240,6 +1245,7 @@ Options:
       --file-prompt           Prompt message when choosing a password store filename
       --key-prompt            Prompt message when choosing a password store key
       --mode-prompt           Prompt message when choosing pass-menu mode
+  -a, --show-aliases          Show password aliases (symbolic links)
   -h, --help                  Print this help message and exit
 
 Logger Types:
@@ -1480,6 +1486,10 @@ parse_args () {
 
                 MENU_CMD=("${@}")
                 break
+            ;;
+            -a | --show-aliases)
+                SHOW_ALIASES=1
+                shift 1
             ;;
             -*) arg_error "Unknown flag" "${1}" ;;
             *)  arg_error "Invalid position for value" "${1}" ;;
